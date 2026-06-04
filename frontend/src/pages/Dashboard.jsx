@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
-import echo from '../echo';
 
 export default function Dashboard() {
   const [products, setProducts] = useState([]);
@@ -16,21 +15,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchProducts();
-
-    // Listen for real-time stock updates
-    echo.channel('inventory')
-      .listen('StockUpdated', (e) => {
-        console.log('Stock updated event received:', e);
-        setProducts(prevProducts => 
-          prevProducts.map(p => 
-            p.id === e.product.id ? e.product : p
-          )
-        );
-      });
-
-    return () => {
-      echo.leaveChannel('inventory');
-    };
+    // Poll for updates every 10 seconds (replaces WebSocket for free tier)
+    const interval = setInterval(fetchProducts, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
