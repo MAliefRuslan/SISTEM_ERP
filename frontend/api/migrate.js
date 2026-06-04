@@ -11,30 +11,55 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Create tables if they don't exist
+    // Drop existing tables to recreate with multi-tenant schema (WARNING: THIS WILL DELETE EXISTING DATA)
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS categories (
+      DROP TABLE IF EXISTS inventory_transactions, products, categories, users, companies CASCADE;
+
+      CREATE TABLE companies (
         id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        address TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+
+      CREATE TABLE users (
+        id SERIAL PRIMARY KEY,
+        company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(50) NOT NULL DEFAULT 'admin',
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+
+      CREATE TABLE categories (
+        id SERIAL PRIMARY KEY,
+        company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
         name VARCHAR(255) NOT NULL,
         description TEXT,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       );
 
-      CREATE TABLE IF NOT EXISTS products (
+      CREATE TABLE products (
         id SERIAL PRIMARY KEY,
+        company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
         category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
         name VARCHAR(255) NOT NULL,
-        sku VARCHAR(255) NOT NULL UNIQUE,
+        sku VARCHAR(255) NOT NULL,
         description TEXT,
         price DECIMAL(15,2) NOT NULL DEFAULT 0,
         stock INTEGER NOT NULL DEFAULT 0,
         created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
+        updated_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(company_id, sku)
       );
 
-      CREATE TABLE IF NOT EXISTS inventory_transactions (
+      CREATE TABLE inventory_transactions (
         id SERIAL PRIMARY KEY,
+        company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
         product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
         type VARCHAR(10) NOT NULL CHECK (type IN ('in', 'out')),
         quantity INTEGER NOT NULL,
