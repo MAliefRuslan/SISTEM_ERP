@@ -16,3 +16,9 @@ export function authenticateToken(req) {
     throw new Error('Forbidden: Invalid token');
   }
 }
+
+export function requireRole(user, ...roles) {
+  if (!roles.includes(user.role)) {
+    throw new Error('Forbidden: Anda tidak memiliki akses ke fitur ini');
+  }
+}

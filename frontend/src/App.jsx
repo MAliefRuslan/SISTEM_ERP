@@ -1,71 +1,85 @@
-import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from './context/AuthContext';
-import { LogOut, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+
+// Components
+import Sidebar from './components/Sidebar';
+
+// Pages
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import POS from './pages/POS';
+import Sales from './pages/Sales';
+import Suppliers from './pages/Suppliers';
+import Purchases from './pages/Purchases';
+import Employees from './pages/Employees';
+import Attendance from './pages/Attendance';
+import UserManagement from './pages/UserManagement';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useContext(AuthContext);
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin w-8 h-8 text-blue-600" /></div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin w-8 h-8 text-blue-600" />
+      </div>
+    );
+  }
   return user ? children : <Navigate to="/login" />;
 }
 
-function App() {
-  const { user, logout } = useContext(AuthContext);
-  const navigate = useNavigate();
+function AdminRoute({ children }) {
+  const { user, loading } = useContext(AuthContext);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin w-8 h-8 text-blue-600" />
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/login" />;
+  if (user.role !== 'admin') {
+    // Redirect non-admins to dashboard
+    return <Navigate to="/" />;
+  }
+  return children;
+}
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+function App() {
+  const { user } = useContext(AuthContext);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      {user && (
-        <nav className="bg-white shadow-sm border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex">
-                <div className="flex-shrink-0 flex items-center">
-                  <span className="text-xl font-bold text-blue-600">SaaS ERP</span>
-                </div>
-                <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                  <Link to="/" className="border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                    Dashboard
-                  </Link>
-                  <Link to="/products" className="border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                    Produk & Kategori
-                  </Link>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
-                  {user.name} ({user.role})
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="inline-flex items-center text-sm font-medium text-red-600 hover:text-red-500"
-                >
-                  <LogOut className="h-4 w-4 mr-1" />
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
-      )}
+    <div className="min-h-screen bg-slate-55 text-slate-900 font-sans flex flex-col lg:flex-row">
+      {user && <Sidebar />}
 
-      <main className={user ? "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8" : ""}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
-        </Routes>
-      </main>
+      <div className={`flex-grow flex flex-col min-h-screen bg-slate-50/50 ${user ? 'lg:pl-64' : ''}`}>
+        <main className="flex-grow p-4 md:p-6 lg:p-8">
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+
+            {/* Authenticated Routes (Both Admin and Kasir) */}
+            <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
+            <Route path="/pos" element={<PrivateRoute><POS /></PrivateRoute>} />
+            <Route path="/sales" element={<PrivateRoute><Sales /></PrivateRoute>} />
+
+            {/* Admin Only Routes */}
+            <Route path="/suppliers" element={<AdminRoute><Suppliers /></AdminRoute>} />
+            <Route path="/purchases" element={<AdminRoute><Purchases /></AdminRoute>} />
+            <Route path="/employees" element={<AdminRoute><Employees /></AdminRoute>} />
+            <Route path="/attendance" element={<AdminRoute><Attendance /></AdminRoute>} />
+            <Route path="/users" element={<AdminRoute><UserManagement /></AdminRoute>} />
+
+            {/* Catch-all */}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </main>
+      </div>
     </div>
   );
 }
