@@ -1,5 +1,5 @@
-import pool from '../_db.js';
-import { authenticateToken, requireRole } from '../_auth.js';
+import pool from './_db.js';
+import { authenticateToken, requireRole } from './_auth.js';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
