@@ -11,11 +11,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Drop existing tables to recreate with multi-tenant schema (WARNING: THIS WILL DELETE EXISTING DATA)
+    // Use CREATE TABLE IF NOT EXISTS to be safe and idempotent
     await pool.query(`
-      DROP TABLE IF EXISTS inventory_transactions, products, categories, users, companies CASCADE;
-
-      CREATE TABLE companies (
+      CREATE TABLE IF NOT EXISTS companies (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         address TEXT,
@@ -23,7 +21,7 @@ export default async function handler(req, res) {
         updated_at TIMESTAMP DEFAULT NOW()
       );
 
-      CREATE TABLE users (
+      CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
         name VARCHAR(255) NOT NULL,
@@ -34,7 +32,7 @@ export default async function handler(req, res) {
         updated_at TIMESTAMP DEFAULT NOW()
       );
 
-      CREATE TABLE categories (
+      CREATE TABLE IF NOT EXISTS categories (
         id SERIAL PRIMARY KEY,
         company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
         name VARCHAR(255) NOT NULL,
@@ -43,7 +41,7 @@ export default async function handler(req, res) {
         updated_at TIMESTAMP DEFAULT NOW()
       );
 
-      CREATE TABLE products (
+      CREATE TABLE IF NOT EXISTS products (
         id SERIAL PRIMARY KEY,
         company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
         category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
@@ -57,7 +55,7 @@ export default async function handler(req, res) {
         UNIQUE(company_id, sku)
       );
 
-      CREATE TABLE inventory_transactions (
+      CREATE TABLE IF NOT EXISTS inventory_transactions (
         id SERIAL PRIMARY KEY,
         company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
         product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
