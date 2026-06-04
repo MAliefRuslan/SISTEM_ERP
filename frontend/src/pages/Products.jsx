@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -8,7 +8,7 @@ export default function Products() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/products');
+      const response = await api.get('/api/products');
       setProducts(response.data);
     } catch (error) {
       console.error(error);
@@ -22,7 +22,7 @@ export default function Products() {
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8000/api/products', newProduct);
+      await api.post('/api/products', newProduct);
       setNewProduct({ name: '', sku: '', price: '', description: '' });
       fetchProducts();
     } catch (error) {
@@ -34,9 +34,9 @@ export default function Products() {
   const handleTransaction = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8000/api/inventory-transactions', transaction);
+      await api.post('/api/inventory-transactions', transaction);
       setTransaction({ product_id: '', type: 'in', quantity: '' });
-      fetchProducts(); // Refresh local list
+      fetchProducts();
       alert("Transaction successful!");
     } catch (error) {
       console.error("Error creating transaction", error);
