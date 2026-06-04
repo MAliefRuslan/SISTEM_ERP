@@ -52,7 +52,7 @@ function App() {
   const { user } = useContext(AuthContext);
 
   return (
-    <div className="min-h-screen bg-slate-55 text-slate-900 font-sans flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col lg:flex-row">
       {user && <Sidebar />}
 
       <div className={`flex-grow flex flex-col min-h-screen bg-slate-50/50 ${user ? 'lg:pl-64' : ''}`}>
