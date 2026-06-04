@@ -1,0 +1,54 @@
+services:
+  - type: web
+    name: erp-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: APP_NAME
+        value: "ERP System"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: erp-database
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: erp-database
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: erp-database
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: erp-database
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: erp-database
+          property: password
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: BROADCAST_CONNECTION
+        value: log
+      - key: FRONTEND_URL
+        value: "*"
+
+databases:
+  - name: erp-database
+    plan: free
+    databaseName: erp_db
+    user: erp_user
