@@ -56,6 +56,22 @@ export default function Register() {
         <p className="mt-2 text-center text-sm text-gray-600">
           Atau <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">login ke akun Anda</Link>
         </p>
+        <div className="mt-4 text-center">
+          <button 
+            onClick={async () => {
+              try {
+                const res = await fetch('/api/migrate');
+                const data = await res.json();
+                alert(data.message || data.error);
+              } catch (e) {
+                alert("Error: " + e.message);
+              }
+            }}
+            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
+          >
+            Setup Database (Klik Ini Pertama Kali)
+          </button>
+        </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
